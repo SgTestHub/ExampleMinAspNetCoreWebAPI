@@ -20,4 +20,28 @@ app.MapPost("/api/testitems", async (TestDB db, TestModelItem item) =>
     return Results.Created($"/api/testitems/{item.Id}", item);
 });
 
+app.MapPut("/api/testitems/{id}", async (int id,TestDB db, TestModelItem item) =>
+{
+    var existingItem = await db.TestItem.FindAsync(id);
+    if (existingItem == null)
+    {
+        return Results.NotFound();
+    }
+    
+    item.Name = existingItem.Name;
+    item.IsComplete = existingItem.IsComplete;
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+app.MapDelete("/api/testitems/{id}", async (int id, TestDB db) =>
+{
+    if (await db.TestItem.FindAsync(id) is TestModelItem mItem)
+    {
+        db.TestItem.Remove(mItem);
+        await db.SaveChangesAsync();
+    }
+    return Results.NoContent();
+});
+
 app.Run();
